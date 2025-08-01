@@ -1,0 +1,256 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Modern neutral backgrounds */
+    --background: 210 20% 98%;
+    --foreground: 215 25% 17%;
+
+    /* Glass card styling */
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 17%;
+
+    /* Modern gradient primary */
+    --primary: 238 94% 59%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 243 75% 59%;
+
+    /* Light neutral secondary */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 215 16% 47%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Indigo accent */
+    --accent: 238 94% 59%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Modern action colors */
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 32 95% 44%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Info blue for emails */
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 238 94% 59%;
+
+    /* Modern gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(238 94% 59%), hsl(262 83% 58%));
+    --gradient-surface: linear-gradient(180deg, hsl(210 20% 98%) 0%, hsl(0 0% 100%) 50%, hsl(210 20% 98%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(160 84% 39%), hsl(158 64% 52%));
+    --gradient-info: linear-gradient(135deg, hsl(199 89% 48%), hsl(188 86% 53%));
+    --gradient-warning: linear-gradient(135deg, hsl(32 95% 44%), hsl(45 93% 47%));
+
+    /* Enhanced shadows */
+    --shadow-soft: 0 4px 6px -1px hsl(215 25% 17% / 0.05);
+    --shadow-medium: 0 10px 15px -3px hsl(215 25% 17% / 0.08);
+    --shadow-large: 0 25px 50px -12px hsl(215 25% 17% / 0.15);
+    --shadow-glass: 0 8px 32px 0 hsl(215 25% 17% / 0.05);
+
+    --radius: 0.875rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 25% 17%;
+    --sidebar-primary: 238 94% 59%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 215 25% 17%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 238 94% 59%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Enhanced responsive utilities */
+@layer utilities {
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  .overscroll-none {
+    overscroll-behavior: none;
+  }
+  
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Modern glass card utility */
+  .glass-card {
+    @apply bg-white/95 backdrop-blur-xl border border-white/20 shadow-glass;
+  }
+
+  /* Gradient border utility */
+  .gradient-border {
+    @apply relative;
+  }
+
+  .gradient-border::before {
+    @apply absolute inset-0 rounded-inherit p-[1px] bg-gradient-to-r from-indigo-500/20 to-purple-600/20 -z-10;
+    content: '';
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+  }
+
+  /* Shimmer animation utility */
+  .shimmer {
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Modern hover effects */
+  .hover-lift {
+    @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl;
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-200 ease-out hover:scale-105 active:scale-95;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-200 ease-out hover:shadow-lg;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-break-inside-avoid {
+    break-inside: avoid;
+  }
+  
+  body {
+    color: black !important;
+    background: white !important;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Enhanced hover states for touch devices */
+@media (hover: hover) {
+  .hover-only\:hover\:bg-muted:hover {
+    background-color: hsl(var(--muted));
+  }
+}
+
+/* Modern animations */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px hsl(238 94% 59% / 0.1); }
+  50% { box-shadow: 0 0 30px hsl(238 94% 59% / 0.2); }
+}
+
+/* Custom Bid Card Styles */
+@layer utilities {
+  .bid-card {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+}
+
+/* Enhanced floating animation for bid cards */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px); 
+  }
+  33% { 
+    transform: translateY(-2px); 
+  }
+  66% { 
+    transform: translateY(-1px); 
+  }
+}
