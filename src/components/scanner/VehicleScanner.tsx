@@ -43,6 +43,16 @@ interface ValuationData {
   };
 }
 
+interface Buyer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  status: 'active' | 'inactive';
+  lastContact: string;
+}
+
 export const VehicleScanner = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
@@ -102,12 +112,13 @@ export const VehicleScanner = () => {
     });
   };
 
-  const handleBidRequestSubmit = (selectedBuyers: string[]) => {
+  const handleBidRequestSubmit = (selectedBuyers: Buyer[]) => {
+    const buyerNames = selectedBuyers.map(buyer => buyer.name);
     toast({
       title: "Bid request prepared!",
-      description: `Ready to send to ${selectedBuyers.length} buyer${selectedBuyers.length !== 1 ? 's' : ''}. Connect messaging service to send.`
+      description: `Ready to send to ${buyerNames.length} buyer${buyerNames.length !== 1 ? 's' : ''}. Connect messaging service to send.`
     });
-    console.log('Bid request would be sent to:', selectedBuyers);
+    console.log('Bid request would be sent to:', buyerNames);
   };
 
   if (!vehicleData) {

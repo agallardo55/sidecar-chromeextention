@@ -1,13 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VehicleScannerWithChat } from "./scanner/VehicleScannerWithChat";
-import { BidRequestsList } from "./bid-requests/BidRequestsList";
-import { BuyersList } from "./buyers/BuyersList";
-import { ProfileSettings } from "./profile/ProfileSettings";
 import { useToast } from "@/hooks/use-toast";
+
+// Lazy load components - Fixed syntax
+const BidRequestsList = lazy(() => import("./bid-requests/BidRequestsList"));
+const BuyersList = lazy(() => import("./buyers/BuyersList"));
+const ProfileSettings = lazy(() => import("./profile/ProfileSettings"));
+
+// Loading component
+const TabLoading = () => (
+  <div className="flex items-center justify-center h-32">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
 
 export function Layout() {
   const [activeTab, setActiveTab] = useState("scanner");
@@ -78,15 +87,21 @@ export function Layout() {
               </TabsContent>
 
               <TabsContent value="bids" className="h-full">
-                <BidRequestsList />
+                <Suspense fallback={<TabLoading />}>
+                  <BidRequestsList />
+                </Suspense>
               </TabsContent>
 
               <TabsContent value="buyers" className="h-full">
-                <BuyersList />
+                <Suspense fallback={<TabLoading />}>
+                  <BuyersList />
+                </Suspense>
               </TabsContent>
 
               <TabsContent value="profile" className="h-full">
-                <ProfileSettings />
+                <Suspense fallback={<TabLoading />}>
+                  <ProfileSettings />
+                </Suspense>
               </TabsContent>
             </div>
           </Tabs>

@@ -1,0 +1,16 @@
+{
+  "ignores": [
+    "@types/chrome",
+    "autoprefixer", 
+    "postcss",
+    "typescript",
+    "depcheck"
+  ],
+  "specials": [
+    "bin",
+    "eslint",
+    "jest",
+    "prettier",
+    "webpack"
+  ]
+} 

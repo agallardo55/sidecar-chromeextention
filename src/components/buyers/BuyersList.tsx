@@ -99,18 +99,6 @@ export const BuyersList = ({ onAddBuyer }: BuyersListProps) => {
     setIsEditModalOpen(true);
   };
 
-  // Expose this function to parent component
-  useEffect(() => {
-    if (onAddBuyer) {
-      (window as any).openAddBuyerModal = openAddModal;
-    }
-    return () => {
-      if ((window as any).openAddBuyerModal) {
-        delete (window as any).openAddBuyerModal;
-      }
-    };
-  }, [onAddBuyer]);
-
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase();
   };
