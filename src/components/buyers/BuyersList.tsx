@@ -14,8 +14,14 @@ interface Buyer {
   email: string;
   phone: string;
   company: string;
-  status: 'active' | 'inactive';
-  lastContact: string;
+  location: string;
+  rating: number;
+  reviewCount: number;
+  specialties: string[];
+  lastActive: string;
+  avgResponseTime: string;
+  status?: 'active' | 'inactive';
+  lastContact?: string;
 }
 
 const mockBuyers: Buyer[] = [

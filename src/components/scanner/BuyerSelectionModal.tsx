@@ -29,7 +29,7 @@ interface VehicleData {
 interface BuyerSelectionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  vehicle: VehicleData;
+  vehicle: VehicleData | null;
   onSubmit: (selectedBuyers: Buyer[]) => void;
 }
 const mockBuyers: Buyer[] = [{
@@ -66,6 +66,11 @@ export const BuyerSelectionModal = ({
   vehicle,
   onSubmit
 }: BuyerSelectionModalProps) => {
+  // Don't render if vehicle is null
+  if (!vehicle) {
+    return null;
+  }
+
   const [selectedBuyers, setSelectedBuyers] = useState<string[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -87,9 +92,9 @@ export const BuyerSelectionModal = ({
     setShowPreview(false);
     onOpenChange(false);
   };
-  const smsMessage = `New bid request: ${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim} - ${vehicle.mileage.toLocaleString()} miles. VIN: ${vehicle.vin}. Interested? Reply for details.`;
-  const emailSubject = `Bid Request: ${vehicle.year} ${vehicle.make} ${vehicle.model}`;
-  const emailBody = `Hello,\n\nWe have a bid request for the following vehicle:\n\n• ${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim}\n• Mileage: ${vehicle.mileage.toLocaleString()} miles\n• Condition: ${vehicle.condition}\n• VIN: ${vehicle.vin}\n\nPlease let us know if you're interested in submitting a bid.\n\nBest regards`;
+  const smsMessage = `New bid request: ${vehicle?.year} ${vehicle?.make} ${vehicle?.model} ${vehicle?.trim} - ${vehicle?.mileage.toLocaleString()} miles. VIN: ${vehicle?.vin}. Interested? Reply for details.`;
+  const emailSubject = `Bid Request: ${vehicle?.year} ${vehicle?.make} ${vehicle?.model}`;
+  const emailBody = `Hello,\n\nWe have a bid request for the following vehicle:\n\n• ${vehicle?.year} ${vehicle?.make} ${vehicle?.model} ${vehicle?.trim}\n• Mileage: ${vehicle?.mileage.toLocaleString()} miles\n• Condition: ${vehicle?.condition}\n• VIN: ${vehicle?.vin}\n\nPlease let us know if you're interested in submitting a bid.\n\nBest regards`;
   if (showPreview) {
     return <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl">

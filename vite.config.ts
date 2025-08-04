@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
     componentTagger(),
     mode === 'production' && visualizer({
       filename: 'dist/stats.html',
-      open: true,
+      open: false,
       gzipSize: true,
       brotliSize: true,
     }),
@@ -37,31 +37,14 @@ export default defineConfig(({ mode }) => ({
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
-        manualChunks: (id) => {
-          // Simple chunk splitting based on node_modules
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-vendor';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'ui-vendor';
-            }
-            if (id.includes('lucide-react') || id.includes('clsx') || id.includes('tailwind-merge')) {
-              return 'utils-vendor';
-            }
-            if (id.includes('react-hook-form') || id.includes('zod')) {
-              return 'form-vendor';
-            }
-            return 'vendor';
-          }
-        }
+        // Temporarily disable manualChunks to fix React loading
+        // manualChunks: undefined,
       }
     },
     target: 'esnext',
     minify: mode === 'production',
     sourcemap: false,
     copyPublicDir: true,
-    // Add chunk size warnings
     chunkSizeWarningLimit: 1000,
   },
   define: {

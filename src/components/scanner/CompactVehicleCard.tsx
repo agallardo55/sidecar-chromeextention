@@ -14,13 +14,18 @@ interface VehicleData {
   features: string[];
 }
 interface CompactVehicleCardProps {
-  vehicle: VehicleData;
+  vehicle: VehicleData | null;
   onViewDetails?: () => void;
 }
 export const CompactVehicleCard: React.FC<CompactVehicleCardProps> = ({
   vehicle,
   onViewDetails
 }) => {
+  // Don't render if vehicle is null
+  if (!vehicle) {
+    return null;
+  }
+
   const getConditionColor = (condition: string) => {
     switch (condition) {
       case 'New':

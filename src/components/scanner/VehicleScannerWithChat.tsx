@@ -5,7 +5,18 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Scan, CheckCircle, DollarSign, History, Wrench, Send, Bot, User } from 'lucide-react';
+import { 
+  Drawer, 
+  DrawerContent, 
+  DrawerHeader, 
+  DrawerTitle, 
+  DrawerClose,
+  DrawerOverlay 
+} from '@/components/ui/drawer';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Scan, CheckCircle, DollarSign, History, Wrench, Send, Bot, User, Plus, Search, X, Car, Image, Clock, Calendar, Eye } from 'lucide-react';
 import { CompactVehicleCard } from './CompactVehicleCard';
 import { CompactValuationCard } from './CompactValuationCard';
 import { CompactConditionCard } from './CompactConditionCard';
@@ -51,12 +62,41 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+interface Buyer {
+  id: string;
+  name: string;
+  company: string;
+  location: string;
+  phone: string;
+  email: string;
+  specialties: string[];
+  rating: number;
+}
+
 interface VehicleScannerWithChatProps {
   vehicleData?: VehicleData | null;
 }
 
+// Add new interface for scan results
+interface ScanVehicleData {
+  vin: string;
+  year: number;
+  make: string;
+  model: string;
+  trim: string;
+  mileage: number;
+  condition: 'New' | 'Used' | 'Certified Pre-Owned';
+  exteriorColor?: string;
+  interiorColor?: string;
+  transmission?: string;
+  fuelType?: string;
+  price?: number;
+  images: string[];
+  features: string[];
+  description?: string;
+}
+
 export const VehicleScannerWithChat = ({ vehicleData: externalVehicleData }: VehicleScannerWithChatProps) => {
-  const [isScanning, setIsScanning] = useState(false);
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [valuationData, setValuationData] = useState<ValuationData | null>(null);
   const [showBuyerModal, setShowBuyerModal] = useState(false);
@@ -75,6 +115,10 @@ export const VehicleScannerWithChat = ({ vehicleData: externalVehicleData }: Veh
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [showScanPopup, setShowScanPopup] = useState(false);
+  const [scanResults, setScanResults] = useState<ScanVehicleData | null>(null);
+  const [showBuyerSelection, setShowBuyerSelection] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -91,58 +135,56 @@ export const VehicleScannerWithChat = ({ vehicleData: externalVehicleData }: Veh
   }, [externalVehicleData]);
 
   const handleScan = async () => {
+    setShowScanPopup(true);
     setIsScanning(true);
-    toast({
-      title: "Scanning page...",
-      description: "Looking for vehicle data on this page."
-    });
-
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    const mockVehicle: VehicleData = {
-      vin: '1HGBH41JXMN109186',
-      year: 2021,
-      make: 'Honda',
-      model: 'Civic',
-      trim: 'Sport',
-      mileage: 32450,
-      condition: 'Used',
-      images: ['https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=300&h=200&fit=crop', 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=300&h=200&fit=crop'],
-      features: ['Navigation System', 'Backup Camera', 'Bluetooth', 'Alloy Wheels', 'Keyless Entry']
-    };
-
-    const mockValuation: ValuationData = {
-      kbb: {
-        retail: 22500,
-        lending: 20800,
-        auction: 19200
-      },
-      jdPower: {
-        retail: 22200,
-        auction: 19500
-      },
-      mmr: {
-        value: 19800,
-        trend: 'up',
-        change: 2.3
-      }
-    };
-
-    setVehicleData(mockVehicle);
-    setValuationData(mockValuation);
-    setIsScanning(false);
-    toast({
-      title: "Vehicle data found!",
-      description: "I've extracted vehicle information from this page."
-    });
-
-    const aiMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: 'assistant',
-      content: `I found a ${mockVehicle.year} ${mockVehicle.make} ${mockVehicle.model} ${mockVehicle.trim} with ${mockVehicle.mileage.toLocaleString()} miles. The KBB retail value is $${mockValuation.kbb.retail.toLocaleString()}. Would you like me to analyze this vehicle for you?`,
-      timestamp: new Date()
-    };
-    setMessages(prev => [...prev, aiMessage]);
+    
+    try {
+      // Simulate scanning process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Mock scan results with full vehicle data
+      const mockResults: ScanVehicleData = {
+        vin: '1HGBH41JXMN109186',
+        year: 2021,
+        make: 'Honda',
+        model: 'Civic',
+        trim: 'EX',
+        mileage: 45000,
+        condition: 'Used',
+        exteriorColor: 'Crystal Black Pearl',
+        interiorColor: 'Black',
+        transmission: 'Automatic',
+        fuelType: 'Gasoline',
+        price: 25000,
+        features: ['Bluetooth', 'Backup Camera', 'Lane Assist', 'Apple CarPlay', 'Android Auto'],
+        images: [
+          'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=300&h=200&fit=crop',
+          'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=300&h=200&fit=crop'
+        ],
+        description: 'Well-maintained Honda Civic with low mileage and excellent features. Perfect for daily commuting.'
+      };
+      
+      setScanResults(mockResults);
+      setVehicleData(mockResults);
+      
+      // Add scan completion message
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        type: 'assistant',
+        content: `✅ Scan complete! Found vehicle: ${mockResults.year} ${mockResults.make} ${mockResults.model} ${mockResults.trim}`,
+        timestamp: new Date()
+      }]);
+      
+    } catch (error) {
+      console.error('Scan failed:', error);
+      toast({
+        title: "Scan Failed",
+        description: "Unable to scan the current page. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const handleSendMessage = async () => {
@@ -204,186 +246,128 @@ export const VehicleScannerWithChat = ({ vehicleData: externalVehicleData }: Veh
     return "I'm here to help with your car buying and selling decisions! I can analyze vehicle data, provide valuations, market insights, and negotiation advice. What specific information would you like?";
   };
 
-  const handleBidRequestSubmit = (selectedBuyers: string[]) => {
+  const handleBidRequestSubmit = (selectedBuyers: Buyer[]) => {
+    const buyerNames = selectedBuyers.map(buyer => buyer.name);
     toast({
       title: "Bid request sent!",
-      description: `Sent to ${selectedBuyers.length} buyers.`
+      description: `Sent to ${buyerNames.length} buyers: ${buyerNames.join(', ')}`
     });
     setShowBuyerModal(false);
   };
 
+  const handleBidRequest = (selectedBuyers: Buyer[]) => {
+    // Handle bid request submission
+    toast({
+      title: "Bid Request Sent",
+      description: `Sent bid request to ${selectedBuyers.length} buyer(s)`,
+    });
+    setShowBuyerSelection(false);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <div className="h-full flex flex-col">
-      {/* Scanner Section - Top portion */}
-      <div className="flex-1 min-h-0 overflow-auto p-4 space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Scan className="h-5 w-5" />
-              Vehicle Page Scanner
-            </CardTitle>
-            <CardDescription>
-              Navigate to any vehicle listing page and click below to extract vehicle data
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button 
-              onClick={handleScan} 
-              disabled={isScanning}
-              className="w-full"
-              size="lg"
-            >
-              {isScanning ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Scanning...
-                </>
-              ) : (
-                <>
-                  <Scan className="h-4 w-4 mr-2" />
-                  Start Page Scan
-                </>
-              )}
-            </Button>
-
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" size="sm">vAuto</Button>
-              <Button variant="outline" size="sm">VINcue</Button>
-              <Button variant="outline" size="sm">Autotrader</Button>
-              <Button variant="outline" size="sm">Cars.com</Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {vehicleData && (
-          <>
-            <CompactVehicleCard 
-              vehicle={vehicleData} 
-              onViewDetails={() => setShowVehicleDetails(true)}
-            />
-            <CompactValuationCard 
-              valuation={valuationData!} 
-              onViewDetails={() => setShowValuationDetails(true)}
-            />
-            <CompactConditionCard 
-              onViewDetails={() => setShowConditionDetails(true)}
-            />
-            
-            <Card>
-              <CardContent className="pt-6">
-                <Button 
-                  onClick={() => setShowBuyerModal(true)}
-                  className="w-full"
+      {/* Chat Section - Full height */}
+      <div className="flex-1 flex flex-col">
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full p-4">
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex gap-3 ${
+                    message.type === 'user' ? 'justify-end' : 'justify-start'
+                  }`}
                 >
-                  Send Bid Request
-                </Button>
-              </CardContent>
-            </Card>
-          </>
-        )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              Key Features
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  Auto Extract VIN, specs & pricing
-                </div>
-                <div className="flex items-center gap-2">
-                  <History className="h-4 w-4 text-blue-500" />
-                  History Carfax & AutoCheck
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-yellow-500" />
-                  $ Valuations KBB, JD Power, MMR
-                </div>
-                <div className="flex items-center gap-2">
-                  <Wrench className="h-4 w-4 text-purple-500" />
-                  Assessment Condition evaluation
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Chat Section - Bottom portion */}
-      <div className="border-t bg-background flex-shrink-0">
-        <div className="flex flex-col" style={{ height: '280px' }}>
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full p-4">
-              <div className="space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-3 ${
-                      message.type === 'user' ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
-                    {message.type === 'assistant' && (
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                        <Bot className="h-4 w-4 text-primary-foreground" />
-                      </div>
-                    )}
-                    <div
-                      className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                        message.type === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
-                      }`}
-                    >
-                      {message.content}
-                    </div>
-                    {message.type === 'user' && (
-                      <div className="flex-shrink-0 w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-                        <User className="h-4 w-4" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {isTyping && (
-                  <div className="flex gap-3 justify-start">
+                  {message.type === 'assistant' && (
                     <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                       <Bot className="h-4 w-4 text-primary-foreground" />
                     </div>
-                    <div className="bg-muted rounded-lg px-3 py-2 text-sm">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
-                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                      </div>
+                  )}
+                  <div
+                    className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                      message.type === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted'
+                    }`}
+                  >
+                    {message.content}
+                  </div>
+                  {message.type === 'user' && (
+                    <div className="flex-shrink-0 w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4" />
+                    </div>
+                  )}
+                </div>
+              ))}
+              {isTyping && (
+                <div className="flex gap-3 justify-start">
+                  <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                    <Bot className="h-4 w-4 text-primary-foreground" />
+                  </div>
+                  <div className="bg-muted rounded-lg px-3 py-2 text-sm">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
                     </div>
                   </div>
-                )}
-                <div ref={chatEndRef} />
-              </div>
-            </ScrollArea>
-          </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+          </ScrollArea>
+        </div>
 
-          {/* Chat Input */}
-          <div className="border-t p-4 flex-shrink-0">
-            <div className="flex gap-2">
-              <Input
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Ask me about this vehicle, market trends, or negotiation advice..."
-                className="flex-1"
-              />
+        {/* Chat Input */}
+        <div className="border-t p-4 flex-shrink-0">
+          <div className="bg-gray-100 rounded-lg p-3">
+            <Input
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              placeholder="Choose a function or ask me anything..."
+              className="border-0 bg-transparent px-3 py-2 text-sm focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:ring-offset-0"
+            />
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-8 w-8 rounded-full border-gray-300 bg-white"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 px-3 rounded-full border-gray-300 bg-white flex items-center gap-2"
+                  onClick={handleScan}
+                  disabled={isScanning}
+                >
+                  {isScanning ? (
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600" />
+                  ) : (
+                    <Search className="h-4 w-4" />
+                  )}
+                  <span className="text-sm">Scan</span>
+                </Button>
+              </div>
               <Button 
                 onClick={handleSendMessage}
                 disabled={!inputMessage.trim() || isTyping}
                 size="icon"
+                className="h-8 w-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Send className="h-4 w-4" />
               </Button>
@@ -392,26 +376,301 @@ export const VehicleScannerWithChat = ({ vehicleData: externalVehicleData }: Veh
         </div>
       </div>
 
-      {/* Modals */}
-      <VehicleDetailsModal
-        vehicle={vehicleData}
-        open={showVehicleDetails}
-        onOpenChange={setShowVehicleDetails}
-      />
-      <ValuationDetailsModal
-        valuation={valuationData}
-        open={showValuationDetails}
-        onOpenChange={setShowValuationDetails}
-      />
-      <ConditionDetailsModal
-        open={showConditionDetails}
-        onOpenChange={setShowConditionDetails}
-      />
+      {/* Scan Drawer */}
+      <Drawer open={showScanPopup} onOpenChange={setShowScanPopup}>
+        <DrawerContent className="h-[90vh] animate-slide-in-right">
+          <DrawerHeader className="p-4 pb-2 border-b bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white">
+            <div className="flex items-center justify-between">
+              <DrawerTitle className="flex items-center space-x-2 text-left">
+                <Search className="h-5 w-5" />
+                <span className="text-lg font-bold">
+                  {scanResults ? `${scanResults.year} ${scanResults.make} ${scanResults.model} ${scanResults.trim}` : 'Page Scanner'}
+                </span>
+              </DrawerTitle>
+              <DrawerClose asChild>
+                <button className="text-white/80 hover:text-white transition-colors">
+                  <X className="h-5 w-5" />
+                </button>
+              </DrawerClose>
+            </div>
+          </DrawerHeader>
+
+          {isScanning ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-6"></div>
+              <h4 className="text-xl font-semibold mb-2">Scanning Page</h4>
+              <p className="text-gray-600 text-center max-w-md">
+                Analyzing the current page for vehicle data, VIN numbers, pricing information, and other relevant details...
+              </p>
+            </div>
+          ) : scanResults ? (
+            <Tabs defaultValue="vehicle-details" className="flex flex-col h-full">
+              <TabsList className="flex mx-4 mt-2 h-auto min-h-[40px] p-1 bg-muted rounded-md">
+                <TabsTrigger value="vehicle-details" className="flex items-center justify-center gap-2 text-sm flex-1 px-3 py-1.5 rounded-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                  <Car className="h-4 w-4" />
+                  <span>Details</span>
+                </TabsTrigger>
+                <TabsTrigger value="bid-request" className="flex items-center justify-center gap-2 text-sm flex-1 px-3 py-1.5 rounded-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                  <Send className="h-4 w-4" />
+                  <span>Send Bid Request</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="vehicle-details" className="flex-1 mt-0">
+                <ScrollArea className="max-h-[calc(90vh-8rem)] overflow-y-auto">
+                  <div className="p-4 animate-fade-in">
+                    <div className="space-y-4">
+                      {/* Vehicle Images Carousel Card */}
+                      <Card className="overflow-hidden shadow-soft hover:shadow-medium transition-shadow duration-200">
+                        <CardHeader className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white p-3">
+                          <CardTitle className="text-base flex items-center space-x-2">
+                            <Image className="h-4 w-4" />
+                            <span>Vehicle Images</span>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          {scanResults.images.length === 0 ? (
+                            <div className="bg-slate-50 p-6 text-center text-slate-600">
+                              <Image className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                              <p className="text-sm">No images available</p>
+                              <p className="text-xs">Images will be displayed here when available</p>
+                            </div>
+                          ) : (
+                            <div className="bg-slate-50 p-3">
+                              <Carousel className="w-full max-w-xs mx-auto">
+                                <CarouselContent>
+                                  {scanResults.images.map((image, index) => (
+                                    <CarouselItem key={index}>
+                                      <div className="p-1">
+                                        <img
+                                          src={image}
+                                          alt={`Vehicle image ${index + 1}`}
+                                          className="w-full h-48 object-cover rounded-lg shadow-sm"
+                                          onError={(e) => {
+                                            e.currentTarget.src = '/placeholder.svg';
+                                          }}
+                                        />
+                                      </div>
+                                    </CarouselItem>
+                                  ))}
+                                </CarouselContent>
+                                <CarouselPrevious className="left-2" />
+                                <CarouselNext className="right-2" />
+                              </Carousel>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Vehicle Details Card */}
+                      <Card className="overflow-hidden shadow-soft hover:shadow-medium transition-shadow duration-200">
+                        <CardHeader className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white p-3">
+                          <CardTitle className="text-base flex items-center space-x-2">
+                            <Car className="h-4 w-4" />
+                            <span>Vehicle Information</span>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <div className="bg-slate-50 p-3 space-y-2">
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div className="flex flex-col">
+                                <span className="text-slate-600 uppercase tracking-wide font-medium">VIN</span>
+                                <div className="font-mono text-slate-800 mt-1 break-all">{scanResults.vin}</div>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-slate-600 uppercase tracking-wide font-medium">Mileage</span>
+                                <div className="font-semibold text-slate-800 mt-1">{scanResults.mileage.toLocaleString()} mi</div>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-slate-600 uppercase tracking-wide font-medium">Condition</span>
+                                <div className="font-semibold text-slate-800 mt-1">{scanResults.condition}</div>
+                              </div>
+                              {scanResults.price && (
+                                <div className="flex flex-col">
+                                  <span className="text-slate-600 uppercase tracking-wide font-medium">Price</span>
+                                  <div className="font-semibold text-green-600 mt-1">${scanResults.price.toLocaleString()}</div>
+                                </div>
+                              )}
+                              {scanResults.exteriorColor && (
+                                <div className="flex flex-col">
+                                  <span className="text-slate-600 uppercase tracking-wide font-medium">Exterior</span>
+                                  <div className="font-semibold text-slate-800 mt-1">{scanResults.exteriorColor}</div>
+                                </div>
+                              )}
+                              {scanResults.interiorColor && (
+                                <div className="flex flex-col">
+                                  <span className="text-slate-600 uppercase tracking-wide font-medium">Interior</span>
+                                  <div className="font-semibold text-slate-800 mt-1">{scanResults.interiorColor}</div>
+                                </div>
+                              )}
+                              {scanResults.transmission && (
+                                <div className="flex flex-col">
+                                  <span className="text-slate-600 uppercase tracking-wide font-medium">Transmission</span>
+                                  <div className="font-semibold text-slate-800 mt-1">{scanResults.transmission}</div>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {scanResults.features && scanResults.features.length > 0 && (
+                              <div className="pt-2 border-t border-slate-200">
+                                <span className="text-slate-600 uppercase tracking-wide font-medium text-xs">Features</span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {scanResults.features.map((feature, index) => (
+                                    <Badge key={index} variant="secondary" className="text-xs">
+                                      {feature}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {scanResults.description && (
+                              <div className="pt-2 border-t border-slate-200">
+                                <span className="text-slate-600 uppercase tracking-wide font-medium text-xs">Description</span>
+                                <p className="mt-1 text-slate-800 text-sm">{scanResults.description}</p>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Scan Timeline Card */}
+                      <Card className="overflow-hidden shadow-soft hover:shadow-medium transition-shadow duration-200">
+                        <CardHeader className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white p-3">
+                          <CardTitle className="text-base flex items-center space-x-2">
+                            <Clock className="h-4 w-4" />
+                            <span>Scan Information</span>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <div className="bg-slate-50 p-3 space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <Calendar className="h-4 w-4 text-slate-600 flex-shrink-0" />
+                              <div className="text-xs min-w-0">
+                                <span className="font-medium text-slate-600 uppercase tracking-wide">Scanned:</span>
+                                <span className="ml-1 text-slate-800">{formatDate(new Date().toISOString())}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                              <div className="text-xs min-w-0">
+                                <span className="font-medium text-slate-600 uppercase tracking-wide">Status:</span>
+                                <span className="ml-1 text-slate-800">Vehicle data extracted successfully</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Eye className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                              <div className="text-xs min-w-0">
+                                <span className="font-medium text-slate-600 uppercase tracking-wide">Data Points:</span>
+                                <span className="ml-1 text-slate-800">{Object.keys(scanResults).length} fields extracted</span>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="bid-request" className="flex-1 mt-0">
+                <ScrollArea className="max-h-[calc(90vh-8rem)] overflow-y-auto">
+                  <div className="p-4 animate-fade-in">
+                    <Card className="overflow-hidden shadow-soft hover:shadow-medium transition-shadow duration-200">
+                      <CardHeader className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white p-3">
+                        <CardTitle className="text-base flex items-center space-x-2">
+                          <Send className="h-4 w-4" />
+                          <span>Send Bid Request</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <div className="bg-slate-50 p-3 space-y-4">
+                          <div className="text-center">
+                            <h4 className="font-semibold text-slate-800 mb-2">Ready to send bid request?</h4>
+                            <p className="text-sm text-slate-600 mb-4">
+                              Send this vehicle to potential buyers to get competitive offers.
+                            </p>
+                            <Button 
+                              onClick={() => setShowBuyerSelection(true)}
+                              className="w-full"
+                            >
+                              <Send className="h-4 w-4 mr-2" />
+                              Select Buyers & Send Request
+                            </Button>
+                          </div>
+                          
+                          <div className="bg-white rounded-lg p-3 border border-slate-200">
+                            <h5 className="font-medium text-slate-800 mb-2">Vehicle Summary</h5>
+                            <div className="text-sm text-slate-600 space-y-1">
+                              <p><span className="font-medium">Vehicle:</span> {scanResults.year} {scanResults.make} {scanResults.model} {scanResults.trim}</p>
+                              <p><span className="font-medium">VIN:</span> {scanResults.vin}</p>
+                              <p><span className="font-medium">Mileage:</span> {scanResults.mileage.toLocaleString()} miles</p>
+                              {scanResults.price && (
+                                <p><span className="font-medium">Listed Price:</span> ${scanResults.price.toLocaleString()}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="bg-gray-100 rounded-full p-6 mb-6">
+                <Search className="h-12 w-12 text-gray-400" />
+              </div>
+              <h4 className="text-xl font-semibold mb-2">No Vehicle Data Found</h4>
+              <p className="text-gray-600 max-w-md mb-6">
+                We couldn't find any vehicle information on this page. Make sure you're on a car listing page or try a different website.
+              </p>
+              <Button 
+                variant="outline"
+                onClick={() => setShowScanPopup(false)}
+              >
+                Close Scanner
+              </Button>
+            </div>
+          )}
+        </DrawerContent>
+      </Drawer>
+
+      {/* Buyer Selection Modal */}
       <BuyerSelectionModal
-        open={showBuyerModal}
-        onOpenChange={setShowBuyerModal}
-        onSubmit={handleBidRequestSubmit}
+        open={showBuyerSelection}
+        onOpenChange={setShowBuyerSelection}
+        vehicle={scanResults}
+        onSubmit={handleBidRequest}
       />
+
+      {/* Existing Modals */}
+      {showVehicleDetails && vehicleData && (
+        <VehicleDetailsModal
+          vehicle={vehicleData}
+          onClose={() => setShowVehicleDetails(false)}
+        />
+      )}
+      {showValuationDetails && valuationData && (
+        <ValuationDetailsModal
+          valuation={valuationData}
+          onClose={() => setShowValuationDetails(false)}
+        />
+      )}
+      {showConditionDetails && (
+        <ConditionDetailsModal
+          onClose={() => setShowConditionDetails(false)}
+        />
+      )}
+      {showBuyerModal && (
+        <BuyerSelectionModal
+          open={showBuyerModal}
+          onOpenChange={setShowBuyerModal}
+          vehicle={vehicleData}
+          onSubmit={handleBidRequestSubmit}
+        />
+      )}
     </div>
   );
 };

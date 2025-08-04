@@ -18,7 +18,7 @@ interface VehicleData {
 interface VehicleDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  vehicle: VehicleData;
+  vehicle: VehicleData | null;
 }
 
 export const VehicleDetailsModal: React.FC<VehicleDetailsModalProps> = ({
@@ -26,6 +26,11 @@ export const VehicleDetailsModal: React.FC<VehicleDetailsModalProps> = ({
   onOpenChange,
   vehicle
 }) => {
+  // Don't render if vehicle is null
+  if (!vehicle) {
+    return null;
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
