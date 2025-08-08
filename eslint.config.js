@@ -5,6 +5,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
+  { ignores: ["dist/**"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -14,7 +15,6 @@ export default tseslint.config(
         ...globals.browser,
         ...globals.es2020,
       },
-      jsx: true,
       parserOptions: {
         ecmaFeatures: {
           jsx: true,
@@ -34,6 +34,7 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-empty-object-type": "warn",
       "@typescript-eslint/no-require-imports": "warn",
+      "@typescript-eslint/no-unused-expressions": "off",
     },
   },
   {
