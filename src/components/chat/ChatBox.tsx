@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { AutoResizeInput } from '@/components/ui/auto-resize-input';
 import { Card } from '@/components/ui/card';
 import { Send, MessageCircle, X } from 'lucide-react';
 
@@ -24,6 +24,7 @@ export const ChatBox = () => {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -48,6 +49,11 @@ export const ChatBox = () => {
     setIsLoading(true);
     setIsExpanded(true);
 
+    // Focus back to input after sending
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+
     // Simulate AI response
     setTimeout(() => {
       const aiResponse: Message = {
@@ -64,6 +70,7 @@ export const ChatBox = () => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
+      e.stopPropagation();
       handleSendMessage();
     }
   };
@@ -127,14 +134,26 @@ export const ChatBox = () => {
       <Card className="shadow-lg border-0 bg-background/95 backdrop-blur">
         <div className="p-3">
           <div className="flex space-x-2">
-            <Input
+            <AutoResizeInput
+              ref={inputRef}
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onChange={(e) => {
+                e.stopPropagation();
+                setInputText(e.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSendMessage();
+                }
+              }}
               onFocus={() => messages.length > 1 && setIsExpanded(true)}
               placeholder="Ask me anything..."
               className="flex-1 text-sm"
               disabled={isLoading}
+              minRows={1}
+              maxRows={4}
             />
             <Button
               onClick={handleSendMessage}

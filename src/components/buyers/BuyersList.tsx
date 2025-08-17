@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Phone, Mail, Search, Star, MapPin, Grid, List as ListIcon, Filter } from 'lucide-react';
+import { Phone, Mail, Search, Star, MapPin, Grid, List as ListIcon, Filter, Plus } from 'lucide-react';
 import { BuyerSkeleton } from '@/components/ui/loading-skeleton';
 import { BuyerEditModal } from './BuyerEditModal';
 
@@ -291,6 +291,16 @@ export const BuyersList = ({ onAddBuyer }: BuyersListProps) => {
         onSave={handleSaveBuyer}
         mode={modalMode}
       />
+
+      {/* Floating Action Button - Add Buyer */}
+      <Button
+        onClick={openAddModal}
+        size="icon"
+        className="fixed right-4 bottom-20 h-14 w-14 rounded-full shadow-2xl z-50"
+        title="Add buyer"
+      >
+        <Plus className="h-6 w-6 text-white" />
+      </Button>
     </>
   );
 };

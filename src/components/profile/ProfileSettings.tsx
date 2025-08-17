@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 export const ProfileSettings = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
@@ -251,6 +251,37 @@ export const ProfileSettings = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Sign Out Section */}
+      <Card className="shadow-soft border-destructive/20">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2 text-destructive">
+            <Shield className="h-5 w-5" />
+            <span>Account Actions</span>
+          </CardTitle>
+          <CardDescription>
+            Manage your account and sign out
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                if (window.confirm('Are you sure you want to sign out?')) {
+                  logout();
+                }
+              }}
+              className="w-full sm:w-auto"
+            >
+              Sign Out
+            </Button>
+            <p className="text-sm text-muted-foreground self-center">
+              You'll need to sign in again to access your account
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Password Change Dialog - Removed since form is now in the card */}
 

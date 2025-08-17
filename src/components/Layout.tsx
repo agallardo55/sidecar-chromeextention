@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,41 +7,40 @@ import { VehicleScannerWithChat } from "./scanner/VehicleScannerWithChat";
 import { BidRequestsList } from "./bid-requests/BidRequestsList";
 import { BuyersList } from "./buyers/BuyersList";
 import { ProfileSettings } from "./profile/ProfileSettings";
-import { useToast } from "@/hooks/use-toast";
+import { LoginForm } from "./auth/LoginForm";
+import { Scan, CheckCircle, DollarSign, History, Wrench, Send, Mic, Bot, User, Plus, Search, X, Car, Image, Clock, Calendar, Eye } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "./auth/AuthContext";
 
 export function Layout() {
+  const { user, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("scanner");
   const [vehicleData, setVehicleData] = useState(null);
-  const { toast } = useToast();
 
-  // Listen for messages from content script
-  useEffect(() => {
-    const handleMessage = (event) => {
-      if (event.data && event.data.type === 'VEHICLE_DATA_EXTRACTED') {
-        setVehicleData(event.data.data);
-        toast({
-          title: "Vehicle Data Received",
-          description: "New vehicle data has been extracted from the current page.",
-        });
-      }
-    };
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-surface">
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center space-x-2">
+            <Car className="h-8 w-8 text-primary animate-pulse" />
+            <h1 className="text-2xl font-bold text-foreground">SidecarAI</h1>
+          </div>
+          <p className="text-muted-foreground">Loading your dashboard...</p>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-    // Listen for messages from popup/content script
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request.type === 'VEHICLE_DATA_EXTRACTED') {
-        setVehicleData(request.data);
-        toast({
-          title: "Vehicle Data Received",
-          description: "New vehicle data has been extracted from the current page.",
-        });
-      }
-    });
+  // Show login form if no user is authenticated
+  if (!user) {
+    return <LoginForm />;
+  }
 
-    return () => {
-      chrome.runtime.onMessage.removeListener(handleMessage);
-    };
-  }, [toast]);
-
+  // Show main layout if user is authenticated
   return (
     <div className="min-h-screen bg-background">
       <div className="flex flex-col h-screen">

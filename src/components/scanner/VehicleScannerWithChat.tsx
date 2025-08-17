@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input';
+import { AutoResizeInput } from '@/components/ui/auto-resize-input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Drawer, 
@@ -16,7 +16,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Scan, CheckCircle, DollarSign, History, Wrench, Send, Bot, User, Plus, Search, X, Car, Image, Clock, Calendar, Eye } from 'lucide-react';
+import { Scan, CheckCircle, DollarSign, History, Wrench, Send, Mic, Bot, User, Plus, Search, X, Car, Image, Clock, Calendar, Eye } from 'lucide-react';
 import { CompactVehicleCard } from './CompactVehicleCard';
 import { CompactValuationCard } from './CompactValuationCard';
 import { CompactConditionCard } from './CompactConditionCard';
@@ -121,6 +121,9 @@ export const VehicleScannerWithChat = ({ vehicleData: externalVehicleData }: Veh
   const [showBuyerSelection, setShowBuyerSelection] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
@@ -133,6 +136,65 @@ export const VehicleScannerWithChat = ({ vehicleData: externalVehicleData }: Veh
       setVehicleData(externalVehicleData);
     }
   }, [externalVehicleData]);
+
+  // Stop recognition on unmount (safety)
+  useEffect(() => {
+    return () => {
+      try {
+        if (recognitionRef.current) {
+          recognitionRef.current.stop();
+          recognitionRef.current = null;
+        }
+      } catch (e) {
+        // no-op
+      }
+    };
+  }, []);
+
+  const handleMicClick = () => {
+    try {
+      // Stop any existing recognition first
+      if (recognitionRef.current && isRecording) {
+        recognitionRef.current.stop();
+        setIsRecording(false);
+        return;
+      }
+
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        toast({
+          title: 'Voice input unavailable',
+          description: 'Your browser does not support speech recognition.',
+        });
+        return;
+      }
+
+      if (!recognitionRef.current) {
+        const rec = new SpeechRecognition();
+        rec.continuous = false;
+        rec.interimResults = true;
+        rec.lang = 'en-US';
+        rec.onresult = (e: any) => {
+          let text = '';
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            text += e.results[i][0].transcript;
+          }
+          setInputMessage(text);
+        };
+        rec.onend = () => setIsRecording(false);
+        rec.onerror = () => setIsRecording(false);
+        recognitionRef.current = rec;
+      }
+
+      if (!isRecording) {
+        setIsRecording(true);
+        recognitionRef.current.start();
+      }
+    } catch {
+      setIsRecording(false);
+    }
+  };
 
   const handleScan = async () => {
     setShowScanPopup(true);
@@ -200,6 +262,11 @@ export const VehicleScannerWithChat = ({ vehicleData: externalVehicleData }: Veh
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsTyping(true);
+
+    // Focus back to input after sending
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
 
     setTimeout(() => {
       const aiResponse = generateAIResponse(inputMessage, vehicleData, valuationData);
@@ -332,12 +399,23 @@ export const VehicleScannerWithChat = ({ vehicleData: externalVehicleData }: Veh
         {/* Chat Input */}
         <div className="border-t p-4 flex-shrink-0">
           <div className="bg-gray-100 rounded-lg p-3">
-            <Input
+            <AutoResizeInput
+              ref={inputRef}
               value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              onChange={(e) => {
+                e.stopPropagation();
+                setInputMessage(e.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
               placeholder="Choose a function or ask me anything..."
               className="border-0 bg-transparent px-3 py-2 text-sm focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:ring-offset-0"
+              minRows={1}
+              maxRows={4}
             />
             <div className="flex items-center justify-between mt-2">
               <div className="flex gap-2">
@@ -363,14 +441,25 @@ export const VehicleScannerWithChat = ({ vehicleData: externalVehicleData }: Veh
                   <span className="text-sm">Scan</span>
                 </Button>
               </div>
-              <Button 
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isTyping}
-                size="icon"
-                className="h-8 w-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleMicClick}
+                  size="icon"
+                  variant="outline"
+                  className={`h-8 w-8 rounded-full border-gray-300 bg-white ${isRecording ? 'border-red-500 text-red-600' : ''}`}
+                  title={isRecording ? 'Stop recording' : 'Start voice input'}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
+                <Button 
+                  onClick={handleSendMessage}
+                  disabled={!inputMessage.trim() || isTyping}
+                  size="icon"
+                  className="h-8 w-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -648,19 +737,22 @@ export const VehicleScannerWithChat = ({ vehicleData: externalVehicleData }: Veh
       {/* Existing Modals */}
       {showVehicleDetails && vehicleData && (
         <VehicleDetailsModal
+          open={showVehicleDetails}
+          onOpenChange={setShowVehicleDetails}
           vehicle={vehicleData}
-          onClose={() => setShowVehicleDetails(false)}
         />
       )}
       {showValuationDetails && valuationData && (
         <ValuationDetailsModal
+          open={showValuationDetails}
+          onOpenChange={setShowValuationDetails}
           valuation={valuationData}
-          onClose={() => setShowValuationDetails(false)}
         />
       )}
       {showConditionDetails && (
         <ConditionDetailsModal
-          onClose={() => setShowConditionDetails(false)}
+          open={showConditionDetails}
+          onOpenChange={setShowConditionDetails}
         />
       )}
       {showBuyerModal && (
